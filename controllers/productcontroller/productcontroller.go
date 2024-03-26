@@ -2,6 +2,7 @@ package productcontroller
 
 import (
 	"encoding/json"
+	"gorestapi/database"
 	"gorestapi/models"
 
 	"net/http"
@@ -12,7 +13,7 @@ import (
 
 func Index(c *gin.Context) {
 	var products []models.Product
-	models.DB.Find(&products)
+	database.DB.Find(&products)
 	c.JSON(http.StatusOK, gin.H{"products": products})
 
 }
@@ -21,7 +22,7 @@ func Show(c *gin.Context) {
 	var product models.Product
 	id := c.Param("id")
 
-	if err := models.DB.First(&product, id).Error; err != nil {
+	if err := database.DB.First(&product, id).Error; err != nil {
 		switch err {
 		case gorm.ErrRecordNotFound:
 			c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": "Data isnt found"})
@@ -44,7 +45,7 @@ func Create(c *gin.Context) {
 		return
 	}
 
-	models.DB.Create(&product)
+	database.DB.Create(&product)
 	c.JSON(http.StatusOK, gin.H{"product": product})
 
 }
@@ -58,7 +59,7 @@ func Update(c *gin.Context) {
 		return
 	}
 
-	if models.DB.Model(&product).Where("id = ?", id).Updates(&product).RowsAffected == 0 {
+	if database.DB.Model(&product).Where("id = ?", id).Updates(&product).RowsAffected == 0 {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "There is nothing to be updated"})
 		return
 	}
@@ -79,7 +80,7 @@ func Delete(c *gin.Context) {
 	}
 
 	id, _ := input.Id.Int64()
-	if models.DB.Delete(&product, id).RowsAffected == 0 {
+	if database.DB.Delete(&product, id).RowsAffected == 0 {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "Product can't be deleted"})
 		return
 	}
